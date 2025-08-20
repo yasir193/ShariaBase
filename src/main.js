@@ -2,11 +2,11 @@ import express from "express";
 import { config } from "dotenv";
 config();
 
-import userController from './src/Modules/User/user.controller.js';
-import authController from './src/Modules/Auth/auth.controller.js';
-import planController from './src/Modules/Plan/plan.controller.js';
-import { database_connection } from "./src/DB/connection.js";
-import uploadController from './src/Modules/UploadFiles/uploadFiles.controller.js';
+import userController from './Modules/User/user.controller.js';
+import authController from './Modules/Auth/auth.controller.js';
+import planController from './Modules/Plan/plan.controller.js';
+import { database_connection } from "./DB/connection.js";
+import uploadController from './Modules/UploadFiles/uploadFiles.controller.js';
 
 
 
@@ -27,4 +27,4 @@ export const bootstrap = () => {
   });
 };
 
-bootstrap();
+
