@@ -10,10 +10,15 @@ export const addUser = async (req, res) => {
       business_name,
       business_sector,
       password,
+      confirmPassword,
       phone,
       fk_plan_id,
     } = req.body;
 
+    if (password !== confirmPassword)
+      return res
+        .status(400)
+        .json({ message: "password and confirm password does not match" });
     const emailCheck = await pool.query(
       "SELECT 1 FROM tbl_users WHERE email = $1",
       [email]
@@ -22,11 +27,28 @@ export const addUser = async (req, res) => {
     if (emailCheck.rows.length > 0) {
       return res.status(400).json({ error: "Email already exists" });
     }
-
     const query = `
-      INSERT INTO tbl_users (name, email, job_title, typeOfUser, business_name, business_sector, password, phone, fk_plan_id)
-      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING *;
-    `;
+    WITH inserted_user AS (
+      INSERT INTO tbl_users 
+        (name, email, job_title, typeOfUser, business_name, business_sector, password, phone, fk_plan_id)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+      RETURNING 
+        user_id, 
+        name, 
+        email, 
+        job_title, 
+        typeOfUser, 
+        business_name, 
+        business_sector, 
+        phone,
+        fk_plan_id
+    )
+    SELECT 
+      iu.*,
+      p.plan_name  -- Join to get plan_name instead of fk_plan_id
+    FROM inserted_user iu
+    LEFT JOIN tbl_plans p ON iu.fk_plan_id = p.plan_id
+  `;
     const values = [
       name,
       email,
@@ -48,7 +70,19 @@ export const addUser = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+export const getAllUsers = async (req, res) => {
+  try {
+    const query = `select * from tbl_users`;
+    const result = await pool.query(query);
 
+    if (result.rowCount === 0) {
+      res.json({ message: "no users found" });
+    }
+    res.json({ data: result.rows });
+  } catch (error) {
+    res.json({ error: error.message });
+  }
+};
 export const getUserPlan = async (req, res) => {
   try {
     const { id } = req.params;
@@ -64,7 +98,7 @@ export const getUserPlan = async (req, res) => {
         p.refine_requests,
         p.number_of_uploads
       FROM tbl_users u
-      LEFT JOIN tbl_plans p
+      inner JOIN tbl_plans p
       ON u.fk_plan_id = p.plan_id
       WHERE u.user_id = $1
     `;
@@ -125,7 +159,7 @@ export const deleteUser = async (req, res) => {
   try {
     const { id } = req.params;
     const result = await pool.query(
-      "DELETE FROM tbl_users WHERE user_id = $1 RETURNING *",
+      "DELETE FROM tbl_users WHERE user_id = $1",
       [id]
     );
 

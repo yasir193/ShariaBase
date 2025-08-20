@@ -3,8 +3,10 @@ import { config } from "dotenv";
 config();
 
 import userController from './src/Modules/User/user.controller.js';
+import authController from './src/Modules/Auth/auth.controller.js';
 import planController from './src/Modules/Plan/plan.controller.js';
 import { database_connection } from "./src/DB/connection.js";
+import uploadController from './src/Modules/UploadFiles/uploadFiles.controller.js';
 
 
 
@@ -13,8 +15,10 @@ export const bootstrap = () => {
   app.use(express.json());
 
   // Routes
+  app.use("/auth", authController);
   app.use("/user", userController);
   app.use("/plan", planController);
+  app.use("/upload", uploadController);
 
   // Connect DB and start server
   database_connection();

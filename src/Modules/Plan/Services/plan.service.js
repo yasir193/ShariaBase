@@ -28,9 +28,10 @@ export const addSubscription = async (req, res) => {
 export const deleteSubscription = async (req, res) => {
   try {
     const { id } = req.params;
+    const query = "DELETE FROM tbl_plans WHERE plan_id = $1 RETURNING *";
+    const value = [id];
     const result = await pool.query(
-      "DELETE FROM tbl_plans WHERE plan_id = $1 RETURNING *",
-      [id]
+      query , value
     );
 
     if (result.rowCount === 0) {
