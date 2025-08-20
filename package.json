@@ -8,7 +8,7 @@
     "build": "npm install"
   },
   "engines": {
-    "node": "20.14.0"
+    "node": "22.11.0"
   },
   "keywords": [],
   "author": "",
