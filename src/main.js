@@ -7,12 +7,19 @@ import authController from './Modules/Auth/auth.controller.js';
 import planController from './Modules/Plan/plan.controller.js';
 import { database_connection } from "./DB/connection.js";
 import uploadController from './Modules/UploadFiles/uploadFiles.controller.js';
-
+import cors from 'cors';
 
 
 export const bootstrap = () => {
   const app = express();
   app.use(express.json());
+
+
+    app.use(cors({
+    origin: "*", 
+    methods: ['GET', 'POST', 'PUT', 'DELETE'], 
+    credentials: true 
+  }));
 
   // Routes
   app.use("/auth", authController);
