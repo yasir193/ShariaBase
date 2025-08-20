@@ -5,5 +5,6 @@ const planController = Router();
 
 planController.post("/", planService.addSubscription);
 planController.delete("/:id", planService.deleteSubscription);
+planController.get("/", planService.getAllPlans);  
 
 export default planController;
