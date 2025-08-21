@@ -44,6 +44,64 @@ export const getAllPlans = async (req, res) => {
   }
 };
 
+
+export const updateSubscription = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const fields = req.body;
+
+    if (!id) {
+      return res.status(400).json({ error: "Plan ID is required" });
+    }
+
+    if (Object.keys(fields).length === 0) {
+      return res.status(400).json({ error: "No fields provided to update" });
+    }
+
+    // Prevent updating restricted fields
+    const restricted = ["plan_id", "createdat"];
+    const updates = [];
+    const values = [];
+    let idx = 1;
+
+    for (const [key, value] of Object.entries(fields)) {
+      if (!restricted.includes(key)) {
+        updates.push(`${key} = $${idx}`);
+        values.push(value);
+        idx++;
+      }
+    }
+
+    if (updates.length === 0) {
+      return res.status(400).json({ error: "No valid fields to update" });
+    }
+
+    
+    values.push(id);
+
+    const query = `
+      UPDATE tbl_plans
+      SET ${updates.join(", ")}
+      WHERE plan_id = $${idx}
+      RETURNING plan_id, plan_name, daily_requests_per_day, refine_requests, number_of_uploads;
+    `;
+
+    const result = await pool.query(query, values);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: "Plan not found" });
+    }
+
+    res.status(200).json({
+      message: "Plan updated successfully",
+      data: result.rows[0],
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+
 export const deleteSubscription = async (req, res) => {
   try {
     const { id } = req.params;
