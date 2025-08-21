@@ -24,8 +24,6 @@ export const addSubscription = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
-import { pool } from "../../../DB/connection.js";
-
 // Get all plans
 export const getAllPlans = async (req, res) => {
   try {
