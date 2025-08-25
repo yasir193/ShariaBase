@@ -42,8 +42,8 @@ export const uploadFile = async (req, res) => {
 // Update File
 export const updateFile = async (req, res) => {
   const { fileId } = req.params;
-  const { jsonData , userId } = req.body;
-  // const userId = req.user.user_id; 
+  const { jsonData, summary, userId } = req.body;
+  // const userId = req.user.user_id; // if using JWT middleware
 
   try {
     const fileCheck = await pool.query(
@@ -61,10 +61,13 @@ export const updateFile = async (req, res) => {
 
     const result = await pool.query(
       `UPDATE tbl_files 
-        SET last_edits_version = $1, updatedat = CURRENT_TIMESTAMP
-        WHERE file_id = $2 AND user_id = $3
-        RETURNING file_id, file_name, updatedat`,
-      [jsonData, fileId, userId]
+        SET 
+          last_edits_version = $1,
+          summary = COALESCE($2, summary),  -- update only if provided
+          updatedat = CURRENT_TIMESTAMP
+        WHERE file_id = $3 AND user_id = $4
+        RETURNING file_id, file_name, summary, updatedat`,
+      [jsonData, summary, fileId, userId]
     );
 
     res.status(200).json({
@@ -72,6 +75,7 @@ export const updateFile = async (req, res) => {
       data: {
         fileId: result.rows[0].file_id,
         fileName: result.rows[0].file_name,
+        summary: result.rows[0].summary,
         updatedAt: result.rows[0].updatedat,
       },
     });
@@ -93,3 +97,45 @@ export const updateFile = async (req, res) => {
     });
   }
 };
+
+
+
+export const getAllContracts = async (req, res) => {
+  try {
+    const query = `
+  SELECT 
+    f.file_id,
+    f.file_name,
+    f.createdat,
+    f.updatedat,
+    f.original_version,
+    f.last_edits_version,
+    f.summary,
+    u.user_id,
+    u.name AS user_name
+  FROM tbl_files f
+  INNER JOIN tbl_users u ON f.user_id = u.user_id
+  ORDER BY f.createdat DESC
+`;
+
+    const result = await pool.query(query);
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ message: "No contracts found" });
+    }
+
+    res.status(200).json({
+      status: "success",
+      count: result.rowCount,
+      data: result.rows,
+    });
+  } catch (err) {
+    console.error("Database error:", err);
+    res.status(500).json({
+      status: "error",
+      message: "Failed to fetch contracts",
+      details: process.env.NODE_ENV === "development" ? err.message : undefined,
+    });
+  }
+};
+

@@ -5,11 +5,12 @@ import { authenticate } from "./../../Middlewares/auth.middleware.js";
 
 const uploadController = Router();
 
-uploadController.post("/",  validateJson,  uploadFiles.uploadFile);
+uploadController.post("/", validateJson, uploadFiles.uploadFile);
 uploadController.put(
   "/files/:fileId",
 
   validateJson,
   uploadFiles.updateFile
 );
+uploadController.get("/", uploadFiles.getAllContracts);
 export default uploadController;
