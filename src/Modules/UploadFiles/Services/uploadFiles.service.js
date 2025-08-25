@@ -115,7 +115,7 @@ export const getAllContracts = async (req, res) => {
     u.name AS user_name
   FROM tbl_files f
   INNER JOIN tbl_users u ON f.user_id = u.user_id
-  ORDER BY f.createdat DESC
+  ORDER BY f.createdat ASC
 `;
 
     const result = await pool.query(query);
