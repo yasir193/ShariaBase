@@ -72,7 +72,25 @@ export const addUser = async (req, res) => {
 };
 export const getAllUsers = async (req, res) => {
   try {
-    const query = `select * from tbl_users`;
+    const query = `
+      SELECT 
+        u.user_id,
+        u.name,
+        u.email,
+        u.typeOfUser,
+        u.business_name,
+        u.business_sector,
+        u.phone,
+        p.plan_id,
+        p.plan_name,
+        p.daily_requests_per_day,
+        p.refine_requests,
+        p.number_of_uploads
+      FROM tbl_users u
+      INNER JOIN tbl_plans p
+      ON u.fk_plan_id = p.plan_id
+      ORDER BY u.user_id ASC;
+    `;
     const result = await pool.query(query);
 
     if (result.rowCount === 0) {
