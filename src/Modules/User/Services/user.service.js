@@ -78,6 +78,7 @@ export const getAllUsers = async (req, res) => {
         u.name,
         u.email,
         u.typeOfUser,
+        u.job_title
         u.business_name,
         u.business_sector,
         u.phone,
