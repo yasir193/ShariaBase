@@ -139,3 +139,45 @@ export const getAllContracts = async (req, res) => {
   }
 };
 
+
+
+import { pool } from "../../../DB/connection.js";
+
+export const deleteFile = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    // Check if file exists and belongs to user
+    const fileCheck = await pool.query(
+      `SELECT file_id FROM tbl_files WHERE file_id = $1`,
+      [id]
+    );
+
+    if (fileCheck.rowCount === 0) {
+      return res.status(404).json({
+        status: "error",
+        message: "File not found or unauthorized",
+      });
+    }
+
+    // Delete the file
+    const result = await pool.query(
+      `DELETE FROM tbl_files WHERE file_id = $1 RETURNING file_id, file_name`,
+      [id]
+    );
+
+    res.status(200).json({
+      status: "success",
+      message: "File deleted successfully",
+      deletedFile: result.rows[0],
+    });
+  } catch (err) {
+    console.error("Database error:", err);
+    res.status(500).json({
+      status: "error",
+      message: "Failed to delete file",
+      details:
+        process.env.NODE_ENV === "development" ? err.message : undefined,
+    });
+  }
+};

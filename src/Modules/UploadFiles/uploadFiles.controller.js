@@ -13,4 +13,5 @@ uploadController.put(
   uploadFiles.updateFile
 );
 uploadController.get("/", uploadFiles.getAllContracts);
+uploadController.delete("/:id", uploadFiles.deleteFile);
 export default uploadController;
