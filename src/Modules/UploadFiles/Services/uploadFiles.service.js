@@ -141,7 +141,6 @@ export const getAllContracts = async (req, res) => {
 
 
 
-import { pool } from "../../../DB/connection.js";
 
 export const deleteFile = async (req, res) => {
   const { id } = req.params;
