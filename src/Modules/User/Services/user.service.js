@@ -30,8 +30,8 @@ export const addUser = async (req, res) => {
     const query = `
     WITH inserted_user AS (
       INSERT INTO tbl_users 
-        (name, email, job_title, typeOfUser, business_name, business_sector, password, phone, fk_plan_id)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+        (name, email, job_title, typeOfUser, business_name, business_sector, password, phone)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
       RETURNING 
         user_id, 
         name, 
@@ -40,8 +40,7 @@ export const addUser = async (req, res) => {
         typeOfUser, 
         business_name, 
         business_sector, 
-        phone,
-        fk_plan_id
+        phone
     )
     SELECT 
       iu.*,
