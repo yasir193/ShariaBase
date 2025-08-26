@@ -2,7 +2,7 @@ import { pool } from "../../../DB/connection.js";
 
 // Upload File
 export const uploadFile = async (req, res) => {
-  const { jsonData, fileName, userId } = req.body;
+  const { jsonData, fileName, summary ,userId , analysis } = req.body;
   // const userId = req.user.user_id; 
 
   try {
@@ -15,10 +15,10 @@ export const uploadFile = async (req, res) => {
 
     const result = await pool.query(
       `INSERT INTO tbl_files 
-        (file_name, user_id, original_version, last_edits_version)
-        VALUES ($1, $2, $3, $4)
-        RETURNING file_id, file_name, createdat`,
-      [fileName, userId, jsonData, null]
+        (file_name, user_id, original_version, last_edits_version, summary , analysis)
+        VALUES ($1, $2, $3, $4, $5, $6)
+        RETURNING file_id, file_name, createdat, summary ,analysis`,
+      [fileName, userId, jsonData, null , summary , analysis]
     );
 
     res.status(201).json({
@@ -27,6 +27,8 @@ export const uploadFile = async (req, res) => {
         fileId: result.rows[0].file_id,
         fileName: result.rows[0].file_name,
         createdAt: result.rows[0].createdat,
+        summary: result.rows[0].summary,
+        analysis: result.rows[0].analysis,
       },
     });
   } catch (err) {
@@ -42,7 +44,7 @@ export const uploadFile = async (req, res) => {
 // Update File
 export const updateFile = async (req, res) => {
   const { fileId } = req.params;
-  const { jsonData, summary, userId } = req.body;
+  const { jsonData, summary, userId , analysis} = req.body;
   // const userId = req.user.user_id; // if using JWT middleware
 
   try {
@@ -60,15 +62,16 @@ export const updateFile = async (req, res) => {
     }
 
     const result = await pool.query(
-      `UPDATE tbl_files 
-        SET 
-          last_edits_version = $1,
-          summary = COALESCE($2, summary),  -- update only if provided
-          updatedat = CURRENT_TIMESTAMP
-        WHERE file_id = $3 AND user_id = $4
-        RETURNING file_id, file_name, summary, updatedat`,
-      [jsonData, summary, fileId, userId]
-    );
+  `UPDATE tbl_files 
+    SET 
+      last_edits_version = $1,
+      summary = COALESCE($2, summary),  -- update only if provided
+      updatedat = CURRENT_TIMESTAMP,
+      analysis = COALESCE($5, analysis)  
+    WHERE file_id = $3 AND user_id = $4
+    RETURNING file_id, file_name, summary, analysis, updatedat`,
+  [jsonData, summary, fileId, userId, analysis]
+);
 
     res.status(200).json({
       status: "success",
@@ -76,6 +79,7 @@ export const updateFile = async (req, res) => {
         fileId: result.rows[0].file_id,
         fileName: result.rows[0].file_name,
         summary: result.rows[0].summary,
+        analysis: result.rows[0].analysis,
         updatedAt: result.rows[0].updatedat,
       },
     });
@@ -111,6 +115,7 @@ export const getAllContracts = async (req, res) => {
     f.original_version,
     f.last_edits_version,
     f.summary,
+    f.analysis,
     u.user_id,
     u.name AS user_name
   FROM tbl_files f
