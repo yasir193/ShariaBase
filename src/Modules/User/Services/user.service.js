@@ -11,7 +11,7 @@ export const addUser = async (req, res) => {
       business_sector,
       password,
       phone,
-    } = req.body;
+    } = req.validatedUser;
 
     const emailCheck = await pool.query(
       "SELECT 1 FROM tbl_users WHERE email = $1",
