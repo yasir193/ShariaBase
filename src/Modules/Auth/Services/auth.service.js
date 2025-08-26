@@ -4,6 +4,9 @@ import jwt from "jsonwebtoken";
 import CryptoJS from "crypto-js";
 
 export const signUp = async (req, res) => {
+  
+  
+  
   try {
     const {
       name,
