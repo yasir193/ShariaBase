@@ -10,15 +10,9 @@ export const addUser = async (req, res) => {
       business_name,
       business_sector,
       password,
-      confirmPassword,
       phone,
-      fk_plan_id,
     } = req.body;
 
-    if (password !== confirmPassword)
-      return res
-        .status(400)
-        .json({ message: "password and confirm password does not match" });
     const emailCheck = await pool.query(
       "SELECT 1 FROM tbl_users WHERE email = $1",
       [email]
@@ -28,26 +22,11 @@ export const addUser = async (req, res) => {
       return res.status(400).json({ error: "Email already exists" });
     }
     const query = `
-    WITH inserted_user AS (
       INSERT INTO tbl_users 
         (name, email, job_title, typeOfUser, business_name, business_sector, password, phone)
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-      RETURNING 
-        user_id, 
-        name, 
-        email, 
-        job_title, 
-        typeOfUser, 
-        business_name, 
-        business_sector, 
-        phone
-    )
-    SELECT 
-      iu.*,
-      p.plan_name  -- Join to get plan_name instead of fk_plan_id
-    FROM inserted_user iu
-    LEFT JOIN tbl_plans p ON iu.fk_plan_id = p.plan_id
-  `;
+      RETURNING user_id, name, email
+    `;
     const values = [
       name,
       email,
@@ -57,7 +36,6 @@ export const addUser = async (req, res) => {
       business_sector,
       password,
       phone,
-      fk_plan_id,
     ];
     const result = await pool.query(query, values);
 
