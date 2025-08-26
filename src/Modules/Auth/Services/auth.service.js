@@ -18,7 +18,7 @@ export const signUp = async (req, res) => {
       password,
       confirmPassword,
       phone,
-    } = req.body;
+    } = req.validatedData;
 
     if (password !== confirmPassword) {
       return res
