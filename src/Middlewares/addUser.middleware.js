@@ -25,7 +25,7 @@ export const validateUser = (req, res, next) => {
         'any.only': 'Type of user must be either person or business',
         // 'any.required': 'Type of user is required'
       }),
-    plan_id: Joi.allow(),
+    fk_plan_id: Joi.allow(),
     plan_name: Joi.allow(),
 
     business_name: Joi.when('typeOfUser', {
