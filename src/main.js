@@ -5,9 +5,11 @@ config();
 import userController from './Modules/User/user.controller.js';
 import authController from './Modules/Auth/auth.controller.js';
 import planController from './Modules/Plan/plan.controller.js';
+import adminController from "./Modules/Admin/admin.controller.js";
 import { database_connection } from "./DB/connection.js";
 import uploadController from './Modules/UploadFiles/uploadFiles.controller.js';
 import cors from 'cors';
+import authAdminController from "./Modules/AuthAdmin/auth-admin.controller.js";
 
 
 export const bootstrap = () => {
@@ -24,6 +26,8 @@ export const bootstrap = () => {
   // Routes
   app.use("/auth", authController);
   app.use("/user", userController);
+  app.use("/admin", adminController);
+  app.use("/auth-admin", authAdminController);
   app.use("/plan", planController);
   app.use("/upload", uploadController);
 
