@@ -57,9 +57,9 @@ export const validateUser = (req, res, next) => {
       }),
     
     
-    phone: Joi.string().pattern(/^\+?[1-9]\d{1,14}$/)
+    phone: Joi.string()
       .messages({
-        'string.pattern.base': 'Please provide a valid phone number',
+        'string.base': 'Please provide a valid phone number',
         // 'string.empty': 'Phone number is required'
       })
   }).options({ abortEarly: false });
