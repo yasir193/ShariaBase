@@ -5,7 +5,7 @@ import { verifyAdminToken } from './../../Middlewares/auth-admin.middleware.js';
 
 const adminController = Router();
 
-adminController.post("/", adminService.addAdmin);
+adminController.post("/", verifyAdminToken ,adminService.addAdmin);
 // userController.patch("/:id", userService.updateUser);
 // userController.get("/:id/plan", userService.getUserPlan);
 adminController.delete("/:targetId", verifyAdminToken, adminService.deleteAdmin);

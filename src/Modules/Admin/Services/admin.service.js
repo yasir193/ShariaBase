@@ -2,14 +2,16 @@ import { pool } from "../../../DB/connection.js";
 // Add Admin
 export const addAdmin = async (req, res) => {
   try {
-    const {
-      name,
-      email,
-      phone,
-      password,
-      role,
-    } = req.body;
+    const requester = req.admin;
 
+    // Only super admins can add new admins
+    if (requester.role !== "super") {
+      return res.status(403).json({ error: "Only super admins can add new admins" });
+    }
+
+    const { name, email, phone, password, role } = req.body;
+
+    // check if email already exists
     const emailCheck = await pool.query(
       "SELECT 1 FROM tbl_admins WHERE email = $1",
       [email]
@@ -18,19 +20,14 @@ export const addAdmin = async (req, res) => {
     if (emailCheck.rows.length > 0) {
       return res.status(400).json({ error: "Email already exists" });
     }
+
+    // insert new admin
     const query = `
-      INSERT INTO tbl_admins
-        (name, email, role, password, phone)
+      INSERT INTO tbl_admins (name, email, role, password, phone)
       VALUES ($1, $2, $3, $4, $5)
       RETURNING admin_id, name, email, role, phone
     `;
-    const values = [
-      name,
-      email,
-      role,
-      password,
-      phone,
-    ];
+    const values = [name, email, role, password, phone];
     const result = await pool.query(query, values);
 
     res.json({
@@ -41,6 +38,8 @@ export const addAdmin = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
+
 export const getAllAdmins = async (req, res) => {
   try {
     const query = `
@@ -61,76 +60,6 @@ export const getAllAdmins = async (req, res) => {
     res.status(200).json({ data: result.rows });
   } catch (error) {
     res.status(500).json({ error: error.message });
-  }
-};
-export const getUserPlan = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const query = `
-      SELECT 
-        u.user_id,
-        u.name,
-        u.email,
-        u.typeOfUser,
-        p.plan_id,
-        p.plan_name,
-        p.daily_requests_per_day,
-        p.refine_requests,
-        p.number_of_uploads
-      FROM tbl_users u
-      inner JOIN tbl_plans p
-      ON u.fk_plan_id = p.plan_id
-      WHERE u.user_id = $1
-    `;
-    const result = await pool.query(query, [id]);
-
-    if (result.rows.length === 0) {
-      return res.status(404).json({ message: "User not found" });
-    }
-
-    res.json(result.rows[0]);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-};
-
-export const updateUser = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const fields = req.body;
-
-    if (Object.keys(fields).length === 0) {
-      return res.status(400).json({ error: "No fields provided to update" });
-    }
-
-    const setClauses = [];
-    const values = [];
-    let idx = 1;
-
-    for (const [key, value] of Object.entries(fields)) {
-      setClauses.push(`${key} = $${idx}`);
-      values.push(value);
-      idx++;
-    }
-
-    values.push(id);
-
-    const query = `
-      UPDATE tbl_users
-      SET ${setClauses.join(", ")}
-      WHERE user_id = $${idx}
-      RETURNING *;
-    `;
-
-    const result = await pool.query(query, values);
-
-    if (result.rows.length === 0) {
-      return res.status(404).json({ error: "User not found" });
-    }
-
-    res.json({ message: "User updated successfully", data: result.rows[0] });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
   }
 };
 
